@@ -2,8 +2,18 @@
     font-family: "Arial", sans-serif;
 }
 
-label, input {
+label {
     display: block;
+}
+
+input
+{   
+    vertical-align: middle;
+}
+
+label[for]:hover {
+    background: rgba(0, 255, 0, 0.2);
+    cursor: pointer;
 }
 
 .container {
@@ -36,3 +46,4 @@ li.right {
     font-style: italic;
     font-weight: bold;
 }
+
