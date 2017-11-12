@@ -4,108 +4,129 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>Список тестов</title>
-    <style type="text/css" media="screen">
-        * {
-            font-family: "Arial", sans-serif;
-        }
-
-        label, input {
-            display: block;
-        }
-
-        .container {
-            width: 1000px;
-            margin:  0 auto;
-        }        
-    </style>    
+    <link rel="stylesheet" type="text/css" href="css/style.css">
 </head>
 <body>
     <div class="container">
+    <nav>
+        <ul>
+            <li><a href="admin.php" title="Загрузка теста">Загрузка теста</a></li>
+            <li>Список тестов</li>
+            <li><a href="test" title="Прохождение теста">Прохождение теста</a></li>
+        </ul>
+    </nav>
+    <hr>
+
     <?php 
+
+        if(!file_exists('tests/test.json')) {
+            echo '<p class="alert">Файл теста не загружен!</p>';
+            exit;
+        }
+
         $json = file_get_contents('tests/test.json');
         $data = json_decode($json, true);
+        $errCount = 0;
 
-        function checkTestData($data) 
-        {
-            // Checking test consistncy
-            $testParams = ['id' => 'Номер', 'name' => 'Название', 'questions' => 'Список вопросов'];
+        if (!count($data)) {
+            echo '<p class="alert">Список вопросов пуст!</p>';
+        }
 
-            foreach ($data as $test) {
-                $missingParams = array_diff(array_keys($testParams), array_keys($test));
-                // var_dump(array_keys($test), array_keys($testParams), $missingParams);
-                
+        // Checking test consistncy
+        $testParams = ['id' => 'Номер', 'name' => 'Название', 'questions' => 'Список вопросов'];
+
+        foreach ($data as $testNum => $test) {
+            if ($testNum) {
+                echo '<hr>';
+            }
+
+            $missingParams = array_diff(array_keys($testParams), array_keys($test));
+   
+            if ($missingParams) {
+                $errCount++;
+                echo '<p class="alert">'.$testNum.'-й тест не имеет следующих параметров:</p><ul>';
+
+                foreach($missingParams as $param) {
+                    echo '<li>'.$testParams[$param].'</li>';
+                }
+
+                echo '</ul>';
+                continue;
+            }
+
+            // Test info output
+            echo '<h3><strong>Тест '.$test['id'].'. '.$test['name'].'</strong></h3>';
+
+            if (!count($test['questions'])) {
+                $errCount++;
+                echo '<p class="alert">Список вопросов пуст.</p>';
+                continue;
+            }
+
+            // Checking question consistncy
+            $questionParams = ['id' => 'Номер', 'content' => 'Содержание вопроса', 'answers' => 'Ответы'];
+
+            foreach($test['questions'] as $qNum => $question) {
+                $missingParams = array_diff(array_keys($questionParams), array_keys($question));
+
                 if ($missingParams) {
-                    echo '<p>Один из тестов не имеет следующих параметров:</p><ul>';
+                    $errCount++;
+                    echo '<p class="alert">'.$qNum.'-й вопрос не имеет следующих параметров</p><ul>';
 
                     foreach($missingParams as $param) {
-                        echo "<li>$testParams[$param]</li>";
+                        echo "<li>$questionParams[$param]</li>";
                     }
- 
+
                     echo '</ul>';
-                    return 0;
                 }
 
-                if (!count($test['questions'])) {
-                    echo "<p>Список вопросов теста номер {$test['id']} пуст.</p>";
-                    return 0;
+                // Question info output
+                echo '<p><strong>Вопрос '.$question['id'].': '.$question['content'].'</strong></p>';
+
+                if (!count($question['answers'])) {
+                    $errCount++;
+                    echo '<p class="alert">Список ответов пуст.</p>';
+                    continue;
                 }
 
-                // Checking question consistncy
-                $questionParams = ['id' => 'Номер', 'content' => 'Сожержание вопроса', 'answers' => 'Ответы'];
+                // Checking answer consistncy
+                $answerParams = ['content' => 'Содержание ответа', 'right' => 'Правильность'];
 
-                foreach($test['questions'] as $question) {
-                    $missingParams = array_diff(array_keys($questionParams), array_keys($question));
+                echo '<ul>';
+                foreach($question['answers'] as $aNum => $answer) {
+                    $missingParams = array_diff(array_keys($answerParams), array_keys($answer));
 
                     if ($missingParams) {
-                        echo '<p>Один из вопросов не имеет следующих параметров</p><ul>';
+                        $errCount++;
+                        echo '<p class="alert">'.$aNum.'-й ответ не имеет следующих параметров</p><ul>';
 
                         foreach($missingParams as $param) {
-                            echo "<li>$questionParams[$param]</li>";
+                            echo "<li>$answerParams[$param]</li>";
                         }
 
                         echo '</ul>';
-                        return 0;
+                        continue;
                     }
 
-                    if (!count($test['answers'])) {
-                        echo "<p>Список ответов вопроса номер {$question['id']} пуст.</p>";
-                        return 0;
-                    }
+                    //Answer info output
+                    echo '<li'.($answer['right'] ? ' class="right">' : '>')
+                        .$answer['content'].'</li>';
+                }
+                echo '</ul>';        
 
-                    // Checking answer consistncy
-                    $answerParams = ['content' => 'Содержание ответа', 'right' => 'Правильность'];
-
-                    foreach($question['answers'] as $answer) {
-                        $missingParams = array_diff(array_keys($answerParams), array_keys($answer));
-
-                        if ($missingParams) {
-                            echo '<p>Один из ответов не имеет следующих параметров</p><ul>';
-
-                            foreach($missingParams as $param) {
-                                echo "<li>$answerParams[$param]</li>";
-                            }
-
-                            echo '</ul>';
-                            return 0;
-                        }
-
-                        $rights = array_column($answer, 'right');
-
-                        if(!in_array(true, $rights)) {
-                            echo "<p>В вопросе номер {$question['id']} не указано ни одного правильного ответа</p>";
-
-                            return 0;
-                        }
-
-                    }
+                // Checking presence of right answers
+                $rights = array_column($question['answers'], 'right');
+                if(!in_array(true, $rights)) {
+                    echo '<p class="alert">Для вопроса не указано ни одного правильного ответа</p>';
                 }
             }
-
-            return 1;
         }
 
-        if (checkTestData($data)) {
-            echo "Все тесты в порядке!";
+        if($errCount) {
+            echo '<p class="alert"><strong>Ошибок в файле: '.$errCount.'</strong></p>';
+        }
+        else {
+            echo '<p class="success"><strong>Все тесты в порядке!</strong></p>';
         }
 
     ?>

@@ -4,23 +4,19 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>Загрузка файла</title>
-    <style type="text/css" media="screen">
-        * {
-            font-family: "Arial", sans-serif;
-        }
-
-        label, input {
-            display: block;
-        }
-
-        .container {
-            width: 1000px;
-            margin:  0 auto;
-        }        
-    </style>
+    <link rel="stylesheet" type="text/css" href="css/style.css">
 </head>
 <body>
     <div class="container">
+        <nav>
+            <ul>
+                <li>Загрузка теста</li>
+                <li><a href="list.php" title="Список тестов">Список тестов</a></li>
+                <li><a href="test.php" title="Прохождение теста">Прохождение теста</a></li>
+            </ul>
+        </nav>
+        <hr>
+
         <form action="admin.php" enctype="multipart/form-data" method="POST">
             <label for="file">Выберите файл</label>
             <input type="file" name="file">
