@@ -24,9 +24,10 @@
         </form>
         <?php 
             
-            function displayTestsContent($filename) {
+            function checkTestsErrors($filename) {
 
-                $json = file_get_contents('tests/'.$filename);
+                // $json = file_get_contents('tests/'.$filename);
+                $json = file_get_contents($filename);
                 $data = json_decode($json, true);
                 $errCount = 0;
 
@@ -130,6 +131,8 @@
                 else {
                     echo '<p class="success"><strong>Все тесты в порядке!</strong></p>';
                 }
+
+                return $errCount;
             }
 
 
@@ -140,15 +143,27 @@
                 $type = $_FILES['file']['type'];
                 $tmpName = $_FILES['file']['tmp_name'];
                 $name = $_FILES['file']['name'];
+                $extension = array_pop(explode('.',$name));
 
-                if ($type == "application/json") {
-                    echo '<p class="success">Файл '.$name.' успешно загружен</p>';
-                    move_uploaded_file($tmpName, 'tests/tests.json');
+                if ($type == "application/json" // for POSIX-compatible
+                    || 
+                    $extension == "json"        // for Windows
+                    ) {
 
-                    displayTestsContent("tests.json");
+                    $errCount = checkTestsErrors($tmpName);
+
+                    if (!$errCount) {
+                        echo '<p class="success">Файл '.$name.' успешно загружен</p>';
+                        move_uploaded_file($tmpName, 'tests/tests.json');
+                    }
+                    else {
+                        echo '<p class="alert">Файл '.$name.' не загружен. Ошибок в файле:'.$errCount.'</p>';
+                    }
+
+                    
                 }
                 else {
-                    echo '<p class="alert">Файл неверного типа! Допускаются только файлы в формате json.</p>';
+                    echo '<p class="alert">Файл неверного типа или не выбран! Допускаются только файлы в формате json.</p>';
                 }
             }
         ?>
