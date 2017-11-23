@@ -142,10 +142,13 @@
                 $name = $_FILES['file']['name'];
 
                 if ($type == "application/json") {
-                    echo '<p class="success">Файл '.$name.' успешно загружен</p>';
-                    move_uploaded_file($tmpName, 'tests/tests.json');
-
-                    displayTestsContent("tests.json");
+                    if (move_uploaded_file($tmpName, 'tests/tests.json')) {
+                        echo '<p class="success">Файл '.$name.' успешно загружен</p>';
+                        displayTestsContent('tests.json');
+                    }
+                    else {
+                        echo '<p class="alert">Файл не загружен!</p>';
+                    }
                 }
                 else {
                     echo '<p class="alert">Файл неверного типа! Допускаются только файлы в формате json.</p>';

@@ -29,6 +29,11 @@
                 exit;
             }
 
+            if(!isset($test['name'])) {
+                echo '<p class="alert">Имя теста не указано!</p>';
+                exit;
+            }
+            
             $name = $test['name'];
 
         ?>   
