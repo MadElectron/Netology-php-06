@@ -18,12 +18,19 @@
         <hr>
 
         <?php 
-            $json = file_get_contents('tests/tests.json');
-            $data = json_decode($json, true);
+            $testsPath = 'tests/tests.json';
 
-            foreach ($data as $test) {
-                echo '<p><a href="test.php?id='.$test['id'].'">'.
-                    $test['id'].'. '.$test['name'].'</a></p>';
+            if (file_exists($testsPath)) {
+                $json = file_get_contents($testsPath);
+                $data = json_decode($json, true);
+
+                foreach ($data as $test) {
+                    echo '<p><a href="test.php?id='.$test['id'].'">'.
+                        $test['id'].'. '.$test['name'].'</a></p>';
+                }
+            }
+            else {
+                echo '<p class="alert">Список тестов пуст!</p>';
             }
         ?>
     </div>
